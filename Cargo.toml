@@ -1,0 +1,10 @@
+[package]
+name = "voronoi-generation"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+delaunator = "1.1.0"
+macroquad = "0.4.15"
+rand = "0.10.2"
+noise = "0.9.0"
