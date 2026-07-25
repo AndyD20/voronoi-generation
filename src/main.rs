@@ -4,8 +4,10 @@ mod map_details;
 mod map_helpers;
 mod drawing_helpers;
 mod biome_helpers;
+mod input_helpers;
 
 use crate::biome_helpers::{assign_moisture, biome_colour};
+use crate::input_helpers::InputState;
 use crate::drawing_helpers::{draw_cell_boundaries, draw_cell_colours, draw_points};
 use crate::generate_points::generate_jittered_grid_points;
 use crate::map_details::MapDetails;
@@ -35,12 +37,19 @@ async fn main() {
     let elevations: Vec<f64> = assign_elevation(&map);
     let moisture = assign_moisture(&map);
 
+    let mut input_state = InputState::new();
+
     loop {
         clear_background(WHITE);
+        input_state.update();
 
         draw_cell_colours(&map, &elevations, &moisture, biome_colour);
-        // draw_cell_boundaries(&map);
-        // draw_points(&points);
+        if input_state.show_lines {
+            draw_cell_boundaries(&map);
+        }
+        if input_state.show_points {
+            draw_points(&points);
+        }
 
         next_frame().await;
     }
