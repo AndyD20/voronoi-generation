@@ -4,6 +4,7 @@ A real-time procedural 2D island and terrain map generator written in **Rust** u
 
 This application generates island topographies using Delaunay triangulation and Voronoi dual-mesh structures. It features ridged multifractal noise elevation, elevation-aware moisture distribution, dynamic river accumulation with organic noise-curved paths, inland lake formation, and multi-tiered biome shading.
 
+![An example of the maps that can be generated](example.png "Example Image")
 ---
 
 ## Features
