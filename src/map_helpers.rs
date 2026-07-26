@@ -4,8 +4,8 @@ use crate::{GRIDSIZE, WAVELENGTH};
 use macroquad::prelude::*;
 use noise::{NoiseFn, Simplex};
 
-pub fn assign_elevation(map: &MapDetails) -> Vec<f64> {
-    let noise = Simplex::new(1);
+pub fn assign_elevation(map: &MapDetails, seed: u32) -> Vec<f64> {
+    let noise = Simplex::new(seed);
     let points = map.points;
     let num_regions = map.num_regions;
 

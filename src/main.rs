@@ -34,14 +34,20 @@ async fn main() {
         centers: &calculate_centroids(&points, &delaunay),
     };
 
-    let elevations: Vec<f64> = assign_elevation(&map);
-    let moisture = assign_moisture(&map);
+    let mut elevations: Vec<f64> = assign_elevation(&map, 1);
+    let mut moisture = assign_moisture(&map, 1);
 
     let mut input_state = InputState::new();
 
     loop {
         clear_background(WHITE);
         input_state.update();
+
+        if input_state.seed_changed {
+            elevations = assign_elevation(&map, input_state.new_seed);
+            moisture = assign_moisture(&map, input_state.new_seed);
+            input_state.end_seed_changed();
+        }
 
         draw_cell_colours(&map, &elevations, &moisture, biome_colour);
         if input_state.show_lines {

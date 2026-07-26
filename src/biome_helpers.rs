@@ -3,8 +3,8 @@ use crate::map_details::MapDetails;
 use crate::{GRIDSIZE, WAVELENGTH};
 use noise::{NoiseFn, Simplex};
 
-pub fn assign_moisture(map: &MapDetails) -> Vec<f64> {
-    let noise = Simplex::new(1);
+pub fn assign_moisture(map: &MapDetails, seed: u32) -> Vec<f64> {
+    let noise = Simplex::new(seed);
     let points = map.points;
     let num_regions = map.num_regions;
 
