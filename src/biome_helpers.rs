@@ -109,16 +109,65 @@ pub fn biome_colour(
             )
         }
     } else {
-        let mut e = (elevation[r] - 0.5) * 2.0;
-        let m = moisture[r];
-        e = e.clamp(0.0, 1.0).powi(4); // tweak for better coloring
-        let r_base = 210.0 - 100.0 * m;
-        let g_base = 185.0 - 45.0 * m;
-        let b_base = 139.0 - 45.0 * m;
+        // Rescale land elevation 0.5..1.0 to 0.0..1.0
+        let e = ((elevation[r] - 0.5) * 2.0).clamp(0.0, 1.0);
+        let m = moisture[r].clamp(0.0, 1.0);
 
-        let r_val = 255.0 * e + r_base * (1.0 - e);
-        let g_val = 255.0 * e + g_base * (1.0 - e);
-        let b_val = 255.0 * e + b_base * (1.0 - e);
+        // 1. Lowland Biomes (e ~ 0.0..0.35)
+        let (r_low, g_low, b_low) = if m < 0.25 {
+            (210.0, 185.0, 139.0) // Desert
+        } else if m < 0.55 {
+            (136.0, 170.0, 85.0) // Grassland
+        } else if m < 0.80 {
+            (85.0, 153.0, 68.0) // Deciduous Forest
+        } else {
+            (45.0, 106.0, 79.0) // Tropical Rainforest
+        };
+
+        // 2. Highland / Taiga Biomes (e ~ 0.35..0.65) - Dark coniferous pine forest
+        let (r_mid, g_mid, b_mid) = if m < 0.30 {
+            (136.0, 153.0, 119.0) // Shrubland
+        } else if m < 0.70 {
+            (30.0, 77.0, 43.0) // Dark Coniferous Forest / Taiga
+        } else {
+            (40.0, 90.0, 70.0) // Cold Rainforest
+        };
+
+        // 3. Alpine Mountain Biomes (e ~ 0.65..0.85) - Granite Rock & Tundra
+        let (r_high, g_high, b_high) = if m < 0.25 {
+            (115.0, 113.0, 107.0) // Barren Rock / Scree
+        } else if m < 0.60 {
+            (156.0, 163.0, 117.0) // Alpine Tundra
+        } else {
+            (50.0, 80.0, 75.0) // High Alpine Scrub
+        };
+
+        // 4. Snow Peak (e >= 0.85)
+        let (r_snow, g_snow, b_snow) = (235.0, 240.0, 245.0);
+
+        // Blend smoothly across elevation tiers
+        let (r_val, g_val, b_val) = if e < 0.40 {
+            let t = e / 0.40;
+            (
+                r_low * (1.0 - t) + r_mid * t,
+                g_low * (1.0 - t) + g_mid * t,
+                b_low * (1.0 - t) + b_mid * t,
+            )
+        } else if e < 0.80 {
+            let t = (e - 0.40) / 0.30;
+            (
+                r_mid * (1.0 - t) + r_high * t,
+                g_mid * (1.0 - t) + g_high * t,
+                b_mid * (1.0 - t) + b_high * t,
+            )
+        } else {
+            let t = ((e - 0.70) / 0.30).clamp(0.0, 1.0);
+            (
+                r_high * (1.0 - t) + r_snow * t,
+                g_high * (1.0 - t) + g_snow * t,
+                b_high * (1.0 - t) + b_snow * t,
+            )
+        };
 
         Color::new(
             (r_val as f32 / 255.0).clamp(0.0, 1.0),

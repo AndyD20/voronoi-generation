@@ -21,7 +21,7 @@ impl InputState {
             elevation_offset_changed: false,
             new_seed: STARTING_SEED,
             river_threshold: STARTING_RIVER_THRESHOLD,
-            elevation_offset: 0.0,
+            elevation_offset: 0.2,
         }
     }
 
