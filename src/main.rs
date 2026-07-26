@@ -6,9 +6,9 @@ mod drawing_helpers;
 mod biome_helpers;
 mod input_helpers;
 
-use crate::biome_helpers::{assign_moisture, biome_colour};
+use crate::biome_helpers::{assign_moisture, biome_colour, assign_downslope, assign_river_flow};
 use crate::input_helpers::InputState;
-use crate::drawing_helpers::{draw_cell_boundaries, draw_cell_colours, draw_points};
+use crate::drawing_helpers::{draw_cell_boundaries, draw_cell_colours, draw_points, draw_rivers};
 use crate::generate_points::generate_jittered_grid_points;
 use crate::map_details::MapDetails;
 use crate::map_helpers::assign_elevation;
@@ -19,6 +19,7 @@ static GRIDSIZE: usize = 50;
 static JITTER: f32 = 0.5;
 static WAVELENGTH: f32 = 0.5;
 static STARTING_SEED: u32 = 1;
+static STARTING_RIVER_THRESHOLD: f64 = 1.85;
 
 #[macroquad::main("voronoi_map_generation")]
 async fn main() {
@@ -37,6 +38,13 @@ async fn main() {
 
     let mut elevations: Vec<f64> = assign_elevation(&map, STARTING_SEED);
     let mut moisture = assign_moisture(&map, STARTING_SEED);
+    let mut downslope = assign_downslope(&map, &elevations);
+    let mut flow = assign_river_flow(
+        &map,
+        &elevations,
+        &moisture,
+        &downslope
+    );
 
     let mut input_state = InputState::new();
 
@@ -47,10 +55,20 @@ async fn main() {
         if input_state.seed_changed {
             elevations = assign_elevation(&map, input_state.new_seed);
             moisture = assign_moisture(&map, input_state.new_seed);
+
+            downslope = assign_downslope(&map, &elevations);
+            flow = assign_river_flow(
+                &map,
+                &elevations,
+                &moisture,
+                &downslope
+            );
+
             input_state.end_seed_changed();
         }
 
         draw_cell_colours(&map, &elevations, &moisture, biome_colour);
+        draw_rivers(&map, &flow, &downslope, input_state.river_threshold);
         if input_state.show_lines {
             draw_cell_boundaries(&map);
         }
@@ -59,6 +77,7 @@ async fn main() {
         }
 
         draw_text(input_state.new_seed.to_string(), 20.0, 20.0, 30.0, DARKGRAY);
+        draw_text(input_state.river_threshold.to_string(), 20.0, 40.0, 30.0, DARKGRAY);
 
         next_frame().await;
     }

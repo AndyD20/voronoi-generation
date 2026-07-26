@@ -78,3 +78,27 @@ pub fn draw_cell_colours(map: &MapDetails, elevations: &Vec<f64>, moisture: &Vec
         }
     }
 }
+
+pub fn draw_rivers(map: &MapDetails, flow: &[f64], downslope: &[Option<usize>], threshold: f64) {
+    let points = map.points;
+    let triangles = map.triangles;
+
+    let scale_x = screen_width() / GRIDSIZE as f32;
+    let scale_y = screen_height() / GRIDSIZE as f32;
+
+    for r1 in 0..points.len() {
+        if downslope[r1].is_none() || flow[r1] < threshold {
+            continue;
+        }
+
+        let r2 = triangles[downslope[r1].unwrap()];
+
+        let p = points[r1];
+        let q = points[r2];
+
+        let screen_x = p.x * scale_x;
+        let screen_y = p.y * scale_y;
+
+        draw_line(screen_x, screen_y, q.x * scale_x, q.y * scale_y, 1.0, Color::new(0.188, 0.251, 0.498, 1.0))
+    }
+}
