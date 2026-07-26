@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use crate::STARTING_SEED;
 
 pub struct InputState {
     pub show_lines: bool,
@@ -13,7 +14,7 @@ impl InputState {
             show_lines: false,
             show_points: false,
             seed_changed: false,
-            new_seed: 0
+            new_seed: STARTING_SEED
         }
     }
 

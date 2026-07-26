@@ -18,6 +18,7 @@ use macroquad::prelude::*;
 static GRIDSIZE: usize = 50;
 static JITTER: f32 = 0.5;
 static WAVELENGTH: f32 = 0.5;
+static STARTING_SEED: u32 = 1;
 
 #[macroquad::main("voronoi_map_generation")]
 async fn main() {
@@ -34,8 +35,8 @@ async fn main() {
         centers: &calculate_centroids(&points, &delaunay),
     };
 
-    let mut elevations: Vec<f64> = assign_elevation(&map, 1);
-    let mut moisture = assign_moisture(&map, 1);
+    let mut elevations: Vec<f64> = assign_elevation(&map, STARTING_SEED);
+    let mut moisture = assign_moisture(&map, STARTING_SEED);
 
     let mut input_state = InputState::new();
 
@@ -56,6 +57,8 @@ async fn main() {
         if input_state.show_points {
             draw_points(&points);
         }
+
+        draw_text(input_state.new_seed.to_string(), 20.0, 20.0, 30.0, DARKGRAY);
 
         next_frame().await;
     }
