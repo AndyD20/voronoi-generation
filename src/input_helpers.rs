@@ -5,6 +5,7 @@ use crate::{STARTING_RIVER_THRESHOLD, STARTING_SEED};
 pub struct InputState {
     pub show_lines: bool,
     pub show_points: bool,
+    pub show_ui: bool,
     pub seed_changed: bool,
     pub elevation_offset_changed: bool,
     pub new_seed: u32,
@@ -17,6 +18,7 @@ impl InputState {
         Self {
             show_lines: false,
             show_points: false,
+            show_ui: false,
             seed_changed: false,
             elevation_offset_changed: false,
             new_seed: STARTING_SEED,
@@ -39,6 +41,9 @@ impl InputState {
         }
         if is_key_pressed(KeyCode::P) {
             self.show_points = !self.show_points;
+        }
+        if is_key_pressed(KeyCode::I) {
+            self.show_ui = !self.show_ui;
         }
         if is_key_pressed(KeyCode::R) {
             self.seed_changed = true;

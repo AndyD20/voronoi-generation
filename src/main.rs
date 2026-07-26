@@ -98,9 +98,11 @@ async fn main() {
         }
         set_default_camera();
 
-        draw_text(&format!("Seed: {}", input_state.new_seed), 20.0, 30.0, 24.0, DARKGRAY);
-        draw_text(&format!("River Threshold: {:.2}", input_state.river_threshold), 20.0, 60.0, 24.0, DARKGRAY);
-        draw_text(&format!("Elevation Offset: {:+.2}", input_state.elevation_offset), 20.0, 90.0, 24.0, DARKGRAY);
+        if input_state.show_ui {
+            draw_text(&format!("Seed: {}", input_state.new_seed), 20.0, 30.0, 24.0, DARKGRAY);
+            draw_text(&format!("River Threshold: {:.2}", input_state.river_threshold), 20.0, 60.0, 24.0, DARKGRAY);
+            draw_text(&format!("Elevation Offset: {:+.2}", input_state.elevation_offset), 20.0, 90.0, 24.0, DARKGRAY);
+        }
 
         next_frame().await;
     }
