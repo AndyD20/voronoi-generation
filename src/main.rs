@@ -68,7 +68,7 @@ async fn main() {
         }
 
         draw_cell_colours(&map, &elevations, &moisture, biome_colour);
-        draw_rivers(&map, &flow, &downslope, input_state.river_threshold);
+        draw_rivers(&map, &elevations, &flow, &downslope, input_state.river_threshold);
         if input_state.show_lines {
             draw_cell_boundaries(&map);
         }
