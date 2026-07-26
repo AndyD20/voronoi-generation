@@ -16,6 +16,7 @@ use crate::triangulate_helpers::{calculate_centroids, get_delaunay_from_points};
 use macroquad::prelude::*;
 
 static GRIDSIZE: usize = 50;
+static MARGIN: i32 = 5;
 static JITTER: f32 = 0.5;
 static WAVELENGTH: f32 = 0.5;
 static STARTING_SEED: u32 = 1;
@@ -48,6 +49,12 @@ async fn main() {
 
     let mut input_state = InputState::new();
 
+    let camera = Camera2D {
+        target: vec2(GRIDSIZE as f32 / 2.0, GRIDSIZE as f32 / 2.0),
+        zoom: vec2(2.0 / GRIDSIZE as f32, -2.0 / GRIDSIZE as f32),
+        ..Default::default()
+    };
+
     loop {
         clear_background(WHITE);
         input_state.update();
@@ -67,6 +74,7 @@ async fn main() {
             input_state.end_seed_changed();
         }
 
+        set_camera(&camera);
         draw_cell_colours(&map, &elevations, &moisture, biome_colour);
         draw_rivers(&map, &elevations, &flow, &downslope, input_state.river_threshold);
         if input_state.show_lines {
@@ -75,9 +83,10 @@ async fn main() {
         if input_state.show_points {
             draw_points(&points);
         }
+        set_default_camera();
 
-        draw_text(input_state.new_seed.to_string(), 20.0, 20.0, 30.0, DARKGRAY);
-        draw_text(input_state.river_threshold.to_string(), 20.0, 40.0, 30.0, DARKGRAY);
+        draw_text(&input_state.new_seed.to_string(), 20.0, 20.0, 30.0, DARKGRAY);
+        draw_text(&input_state.river_threshold.to_string(), 20.0, 40.0, 30.0, DARKGRAY);
 
         next_frame().await;
     }

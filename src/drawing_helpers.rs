@@ -1,50 +1,38 @@
 use std::collections::HashSet;
 use macroquad::color::{Color, BLACK, RED};
-use macroquad::math::{vec2, Vec2};
-use macroquad::prelude::{draw_circle, draw_line, draw_triangle, screen_height, screen_width};
-use crate::GRIDSIZE;
+use macroquad::math::Vec2;
+use macroquad::prelude::{draw_circle, draw_line, draw_triangle};
 use crate::map_details::MapDetails;
 use crate::map_helpers::edges_around_point;
 use crate::triangulate_helpers::{next_half_edge, triangle_of_edge};
 
-pub fn draw_points(points: &Vec<Vec2>) {
-    let scale_x = screen_width() / GRIDSIZE as f32;
-    let scale_y = screen_height() / GRIDSIZE as f32;
-
+pub fn draw_points(points: &[Vec2]) {
     for point in points {
-        let screen_x = point.x * scale_x;
-        let screen_y = point.y * scale_y;
-
-        draw_circle(screen_x, screen_y, 1.5, RED);
+        draw_circle(point.x, point.y, 0.1, RED);
     }
 }
 
 pub fn draw_cell_boundaries(map: &MapDetails) {
-    let scale_x = screen_width() / GRIDSIZE as f32;
-    let scale_y = screen_height() / GRIDSIZE as f32;
-
     for e in 0..map.num_edges {
         let opposite = map.half_edges[e];
 
         if opposite < map.num_edges && e < opposite {
-            let centers = &map.centers;
+            let centers = map.centers;
 
             let p = centers[triangle_of_edge(e)];
-
-            let screen_x = p.x * scale_x;
-            let screen_y = p.y * scale_y;
-
             let q = centers[triangle_of_edge(opposite)];
 
-            draw_line(screen_x, screen_y, q.x * scale_x, q.y * scale_y, 1.0, BLACK);
+            draw_line(p.x, p.y, q.x, q.y, 0.03, BLACK);
         }
     }
 }
 
-pub fn draw_cell_colours(map: &MapDetails, elevations: &Vec<f64>, moisture: &Vec<f64>, color_fn: fn(&Vec<f64>, &Vec<f64>, usize) -> Color) {
-    let scale_x = screen_width() / GRIDSIZE as f32;
-    let scale_y = screen_height() / GRIDSIZE as f32;
-
+pub fn draw_cell_colours(
+    map: &MapDetails,
+    elevations: &[f64],
+    moisture: &[f64],
+    color_fn: fn(&[f64], &[f64], usize) -> Color,
+) {
     let mut seen: HashSet<usize> = HashSet::new();
 
     let triangles = map.triangles;
@@ -69,10 +57,10 @@ pub fn draw_cell_colours(map: &MapDetails, elevations: &Vec<f64>, moisture: &Vec
             }
             let color = color_fn(elevations, moisture, r);
 
-            let v0 = vec2(vertices[0].x * scale_x, vertices[0].y * scale_y);
+            let v0 = vertices[0];
             for i in 1..(vertices.len() - 1) {
-                let v1 = vec2(vertices[i].x * scale_x, vertices[i].y * scale_y);
-                let v2 = vec2(vertices[i + 1].x * scale_x, vertices[i + 1].y * scale_y);
+                let v1 = vertices[i];
+                let v2 = vertices[i + 1];
                 draw_triangle(v0, v1, v2, color);
             }
         }
@@ -89,9 +77,6 @@ pub fn draw_rivers(
     let points = map.points;
     let triangles = map.triangles;
 
-    let scale_x = screen_width() / GRIDSIZE as f32;
-    let scale_y = screen_height() / GRIDSIZE as f32;
-
     for r1 in 0..points.len() {
         if elevations[r1] < 0.5 || downslope[r1].is_none() || flow[r1] < threshold {
             continue;
@@ -106,15 +91,13 @@ pub fn draw_rivers(
             points[r2]
         };
 
-        let screen_x = p.x * scale_x;
-        let screen_y = p.y * scale_y;
-
+        let width = 0.05 * (flow[r1] as f32).sqrt().max(1.0);
         draw_line(
-            screen_x,
-            screen_y,
-            q.x * scale_x,
-            q.y * scale_y,
-            1.0,
+            p.x,
+            p.y,
+            q.x,
+            q.y,
+            width,
             Color::new(0.188, 0.251, 0.498, 1.0),
         );
     }

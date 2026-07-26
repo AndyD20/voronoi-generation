@@ -81,7 +81,7 @@ pub fn assign_river_flow(
     flow
 }
 
-pub fn biome_colour(elevation: &Vec<f64>, moisture: &Vec<f64>, r: usize) -> Color {
+pub fn biome_colour(elevation: &[f64], moisture: &[f64], r: usize) -> Color {
     let mut e = (elevation[r] - 0.5) * 2.0;
     let m = moisture[r];
 
