@@ -1,3 +1,4 @@
+use std::time::{SystemTime, UNIX_EPOCH};
 use macroquad::prelude::*;
 use crate::STARTING_SEED;
 
@@ -31,7 +32,7 @@ impl InputState {
         }
         if is_key_pressed(KeyCode::R) {
             self.seed_changed = true;
-            self.new_seed = rand::rand();
+            self.new_seed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u32;
         }
     }
 }
