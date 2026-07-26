@@ -31,7 +31,10 @@ pub fn draw_cell_colours(
     map: &MapDetails,
     elevations: &[f64],
     moisture: &[f64],
-    color_fn: fn(&[f64], &[f64], usize) -> Color,
+    flow: &[f64],
+    downslope: &[Option<usize>],
+    threshold: f64,
+    color_fn: fn(&[f64], &[f64], usize, &[f64], &[Option<usize>], f64) -> Color,
 ) {
     let mut seen = vec![false; map.num_regions];
 
@@ -55,7 +58,7 @@ pub fn draw_cell_colours(
             if vertices.len() < 3 {
                 continue;
             }
-            let color = color_fn(elevations, moisture, r);
+            let color = color_fn(elevations, moisture, r, flow, downslope, threshold);
 
             let v0 = vertices[0];
             for i in 1..(vertices.len() - 1) {
@@ -85,8 +88,10 @@ pub fn draw_rivers(
 
         let r2 = triangles[downslope[r1].unwrap()];
 
+        let is_r2_water = elevations[r2] < 0.5 || (downslope[r2].is_none() && flow[r2] >= threshold);
+
         let p = points[r1];
-        let q = if elevations[r2] < 0.5 {
+        let q = if is_r2_water {
             (points[r1] + points[r2]) * 0.5
         } else {
             points[r2]

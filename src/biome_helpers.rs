@@ -81,34 +81,50 @@ pub fn assign_river_flow(
     flow
 }
 
-pub fn biome_colour(elevation: &[f64], moisture: &[f64], r: usize) -> Color {
-    let mut e = (elevation[r] - 0.5) * 2.0;
-    let m = moisture[r];
+pub fn biome_colour(
+    elevation: &[f64],
+    moisture: &[f64],
+    r: usize,
+    flow: &[f64],
+    downslope: &[Option<usize>],
+    threshold: f64,
+) -> Color {
+    let is_lake = elevation[r] >= 0.5 && downslope[r].is_none() && flow[r] >= threshold;
 
-    let r_val: f64;
-    let g_val: f64;
-    let b_val: f64;
-
-    if e < 0.0 {
-        e = e.clamp(-1.0, 0.0);
-        r_val = 48.0 + 48.0 * e;
-        g_val = 64.0 + 64.0 * e;
-        b_val = 127.0 + 127.0 * e;
+    if elevation[r] < 0.5 || is_lake {
+        if is_lake {
+            // Lake water color
+            Color::new(0.20, 0.30, 0.55, 1.0)
+        } else {
+            let mut e = (elevation[r] - 0.5) * 2.0;
+            e = e.clamp(-1.0, 0.0);
+            let r_val = 48.0 + 48.0 * e;
+            let g_val = 64.0 + 64.0 * e;
+            let b_val = 127.0 + 127.0 * e;
+            Color::new(
+                (r_val as f32 / 255.0).clamp(0.0, 1.0),
+                (g_val as f32 / 255.0).clamp(0.0, 1.0),
+                (b_val as f32 / 255.0).clamp(0.0, 1.0),
+                1.0,
+            )
+        }
     } else {
+        let mut e = (elevation[r] - 0.5) * 2.0;
+        let m = moisture[r];
         e = e.clamp(0.0, 1.0).powi(4); // tweak for better coloring
         let r_base = 210.0 - 100.0 * m;
         let g_base = 185.0 - 45.0 * m;
         let b_base = 139.0 - 45.0 * m;
 
-        r_val = 255.0 * e + r_base * (1.0 - e);
-        g_val = 255.0 * e + g_base * (1.0 - e);
-        b_val = 255.0 * e + b_base * (1.0 - e);
-    }
+        let r_val = 255.0 * e + r_base * (1.0 - e);
+        let g_val = 255.0 * e + g_base * (1.0 - e);
+        let b_val = 255.0 * e + b_base * (1.0 - e);
 
-    Color::new(
-        (r_val as f32 / 255.0).clamp(0.0, 1.0),
-        (g_val as f32 / 255.0).clamp(0.0, 1.0),
-        (b_val as f32 / 255.0).clamp(0.0, 1.0),
-        1.0,
-    )
+        Color::new(
+            (r_val as f32 / 255.0).clamp(0.0, 1.0),
+            (g_val as f32 / 255.0).clamp(0.0, 1.0),
+            (b_val as f32 / 255.0).clamp(0.0, 1.0),
+            1.0,
+        )
+    }
 }
