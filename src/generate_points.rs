@@ -3,10 +3,11 @@ use macroquad::prelude::Vec2;
 use rand::random_range;
 
 pub fn generate_jittered_grid_points() -> Vec<Vec2> {
-    let mut points: Vec<Vec2> = Vec::new();
-
     let start = -MARGIN;
     let end = GRIDSIZE as i32 + MARGIN;
+    let total_count = ((end - start) * (end - start)) as usize;
+
+    let mut points: Vec<Vec2> = Vec::with_capacity(total_count);
 
     for x in start..end {
         for y in start..end {

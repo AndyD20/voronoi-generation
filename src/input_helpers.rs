@@ -1,5 +1,5 @@
-use std::time::{SystemTime, UNIX_EPOCH};
 use macroquad::prelude::*;
+use ::rand::random_range;
 use crate::{STARTING_RIVER_THRESHOLD, STARTING_SEED};
 
 pub struct InputState {
@@ -7,7 +7,7 @@ pub struct InputState {
     pub show_points: bool,
     pub seed_changed: bool,
     pub new_seed: u32,
-    pub river_threshold: f64
+    pub river_threshold: f64,
 }
 
 impl InputState {
@@ -17,7 +17,7 @@ impl InputState {
             show_points: false,
             seed_changed: false,
             new_seed: STARTING_SEED,
-            river_threshold: STARTING_RIVER_THRESHOLD
+            river_threshold: STARTING_RIVER_THRESHOLD,
         }
     }
 
@@ -34,13 +34,13 @@ impl InputState {
         }
         if is_key_pressed(KeyCode::R) {
             self.seed_changed = true;
-            self.new_seed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u32;
+            self.new_seed = random_range(1..=u32::MAX);
         }
         if is_key_down(KeyCode::Up) {
             self.river_threshold += 0.01;
         }
         if is_key_down(KeyCode::Down) {
-            self.river_threshold -= 0.01;
+            self.river_threshold = (self.river_threshold - 0.01).max(0.0);
         }
     }
 }

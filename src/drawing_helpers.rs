@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use macroquad::color::{Color, BLACK, RED};
 use macroquad::math::Vec2;
 use macroquad::prelude::{draw_circle, draw_line, draw_triangle};
@@ -33,7 +32,7 @@ pub fn draw_cell_colours(
     moisture: &[f64],
     color_fn: fn(&[f64], &[f64], usize) -> Color,
 ) {
-    let mut seen: HashSet<usize> = HashSet::new();
+    let mut seen = vec![false; map.num_regions];
 
     let triangles = map.triangles;
     let num_edges = map.num_edges;
@@ -42,8 +41,8 @@ pub fn draw_cell_colours(
     for e in 0..num_edges {
         let r = triangles[next_half_edge(e)];
 
-        if !seen.contains(&r) {
-            seen.insert(r);
+        if !seen[r] {
+            seen[r] = true;
 
             let edges = edges_around_point(map.half_edges, e);
 

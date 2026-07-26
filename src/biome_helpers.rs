@@ -10,7 +10,7 @@ pub fn assign_moisture(map: &MapDetails, seed: u32) -> Vec<f64> {
     let points = map.points;
     let num_regions = map.num_regions;
 
-    let mut moisture: Vec<f64> = Vec::new();
+    let mut moisture: Vec<f64> = Vec::with_capacity(num_regions);
 
     for r in 0..num_regions {
         let nx = points[r].x / GRIDSIZE as f32 - 1.0 / 2.0;
@@ -58,11 +58,7 @@ pub fn assign_river_flow(
     let triangles = map.triangles;
 
     let mut regions: Vec<usize> = (0..elevation.len()).collect();
-    regions.sort_by(|&r1, &r2| {
-        elevation[r2]
-            .partial_cmp(&elevation[r1])
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
+    regions.sort_by(|&r1, &r2| elevation[r2].total_cmp(&elevation[r1]));
 
     let mut flow = vec![0.0; elevation.len()];
 
