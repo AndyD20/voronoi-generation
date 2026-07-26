@@ -153,7 +153,7 @@ pub fn biome_colour(
                 g_low * (1.0 - t) + g_mid * t,
                 b_low * (1.0 - t) + b_mid * t,
             )
-        } else if e < 0.80 {
+        } else if e < 0.70 {
             let t = (e - 0.40) / 0.30;
             (
                 r_mid * (1.0 - t) + r_high * t,

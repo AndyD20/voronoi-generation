@@ -3,7 +3,6 @@ use macroquad::math::Vec2;
 use macroquad::prelude::{draw_circle, draw_line, draw_triangle};
 use noise::{NoiseFn, Simplex};
 use crate::map_details::MapDetails;
-use crate::map_helpers::edges_around_point;
 use crate::triangulate_helpers::{next_half_edge, triangle_of_edge};
 
 pub fn draw_points(points: &[Vec2]) {
@@ -37,10 +36,12 @@ pub fn draw_cell_colours(
     color_fn: fn(&[f64], &[f64], usize, &[f64], &[Option<usize>], f64) -> Color,
 ) {
     let mut seen = vec![false; map.num_regions];
+    let mut vertices: Vec<Vec2> = Vec::with_capacity(12);
 
     let triangles = map.triangles;
     let num_edges = map.num_edges;
     let centers = map.centers;
+    let half_edges = map.half_edges;
 
     for e in 0..num_edges {
         let r = triangles[next_half_edge(e)];
@@ -48,12 +49,16 @@ pub fn draw_cell_colours(
         if !seen[r] {
             seen[r] = true;
 
-            let edges = edges_around_point(map.half_edges, e);
-
-            let vertices: Vec<Vec2> = edges
-                .into_iter()
-                .map(|edge| centers[edge / 3])
-                .collect();
+            vertices.clear();
+            let mut incoming = e;
+            loop {
+                let outgoing = next_half_edge(incoming);
+                vertices.push(centers[incoming / 3]);
+                incoming = half_edges[outgoing];
+                if incoming == delaunator::EMPTY || incoming == e {
+                    break;
+                }
+            }
 
             if vertices.len() < 3 {
                 continue;
