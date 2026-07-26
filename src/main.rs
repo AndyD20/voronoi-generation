@@ -22,6 +22,13 @@ static WAVELENGTH: f32 = 0.5;
 static STARTING_SEED: u32 = 1;
 static STARTING_RIVER_THRESHOLD: f64 = 1.85;
 
+fn compute_elevations(raw_elevations: &[f64], offset: f64) -> Vec<f64> {
+    raw_elevations
+        .iter()
+        .map(|&e| (e + offset).clamp(0.0, 1.0))
+        .collect()
+}
+
 #[macroquad::main("voronoi_map_generation")]
 async fn main() {
     let points: Vec<Vec2> = generate_jittered_grid_points();
@@ -37,17 +44,13 @@ async fn main() {
         centers: &calculate_centroids(&points, &delaunay),
     };
 
-    let mut elevations: Vec<f64> = assign_elevation(&map, STARTING_SEED);
-    let mut moisture = assign_moisture(&map, STARTING_SEED);
-    let mut downslope = assign_downslope(&map, &elevations);
-    let mut flow = assign_river_flow(
-        &map,
-        &elevations,
-        &moisture,
-        &downslope
-    );
-
     let mut input_state = InputState::new();
+
+    let mut raw_elevations: Vec<f64> = assign_elevation(&map, STARTING_SEED);
+    let mut elevations: Vec<f64> = compute_elevations(&raw_elevations, input_state.elevation_offset);
+    let mut moisture = assign_moisture(&map, &elevations, STARTING_SEED);
+    let mut downslope = assign_downslope(&map, &elevations);
+    let mut flow = assign_river_flow(&map, &elevations, &moisture, &downslope);
 
     let camera = Camera2D {
         target: vec2(GRIDSIZE as f32 / 2.0, GRIDSIZE as f32 / 2.0),
@@ -60,18 +63,20 @@ async fn main() {
         input_state.update();
 
         if input_state.seed_changed {
-            elevations = assign_elevation(&map, input_state.new_seed);
-            moisture = assign_moisture(&map, input_state.new_seed);
-
+            raw_elevations = assign_elevation(&map, input_state.new_seed);
+            elevations = compute_elevations(&raw_elevations, input_state.elevation_offset);
+            moisture = assign_moisture(&map, &elevations, input_state.new_seed);
             downslope = assign_downslope(&map, &elevations);
-            flow = assign_river_flow(
-                &map,
-                &elevations,
-                &moisture,
-                &downslope
-            );
-
+            flow = assign_river_flow(&map, &elevations, &moisture, &downslope);
             input_state.end_seed_changed();
+        }
+
+        if input_state.elevation_offset_changed {
+            elevations = compute_elevations(&raw_elevations, input_state.elevation_offset);
+            moisture = assign_moisture(&map, &elevations, input_state.new_seed);
+            downslope = assign_downslope(&map, &elevations);
+            flow = assign_river_flow(&map, &elevations, &moisture, &downslope);
+            input_state.end_elevation_offset_changed();
         }
 
         set_camera(&camera);
@@ -85,8 +90,9 @@ async fn main() {
         }
         set_default_camera();
 
-        draw_text(&input_state.new_seed.to_string(), 20.0, 20.0, 30.0, DARKGRAY);
-        draw_text(&input_state.river_threshold.to_string(), 20.0, 40.0, 30.0, DARKGRAY);
+        draw_text(&format!("Seed: {}", input_state.new_seed), 20.0, 30.0, 24.0, DARKGRAY);
+        draw_text(&format!("River Threshold: {:.2}", input_state.river_threshold), 20.0, 60.0, 24.0, DARKGRAY);
+        draw_text(&format!("Elevation Offset: {:+.2}", input_state.elevation_offset), 20.0, 90.0, 24.0, DARKGRAY);
 
         next_frame().await;
     }
