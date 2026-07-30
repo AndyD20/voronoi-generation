@@ -8,7 +8,7 @@ mod input_helpers;
 
 use crate::biome_helpers::{assign_moisture, biome_colour, assign_downslope, assign_river_flow};
 use crate::input_helpers::InputState;
-use crate::drawing_helpers::{draw_cell_boundaries, draw_cell_colours, draw_points, draw_rivers};
+use crate::drawing_helpers::{draw_cell_boundaries, draw_cell_colours, draw_coastlines, draw_points, draw_rivers};
 use crate::generate_points::generate_jittered_grid_points;
 use crate::map_details::MapDetails;
 use crate::map_helpers::assign_elevation;
@@ -87,11 +87,30 @@ async fn main() {
             &flow,
             &downslope,
             input_state.river_threshold,
+            input_state.new_seed,
+            input_state.show_weathering,
             biome_colour,
+        );
+        draw_coastlines(
+            &map,
+            &elevations,
+            &flow,
+            &downslope,
+            input_state.river_threshold,
+            input_state.new_seed,
+            input_state.show_weathering,
         );
         draw_rivers(&map, &elevations, &flow, &downslope, input_state.river_threshold);
         if input_state.show_lines {
-            draw_cell_boundaries(&map);
+            draw_cell_boundaries(
+                &map,
+                &elevations,
+                &flow,
+                &downslope,
+                input_state.river_threshold,
+                input_state.new_seed,
+                input_state.show_weathering,
+            );
         }
         if input_state.show_points {
             draw_points(&points);
@@ -102,6 +121,7 @@ async fn main() {
             draw_text(&format!("Seed: {}", input_state.new_seed), 20.0, 30.0, 24.0, DARKGRAY);
             draw_text(&format!("River Threshold: {:.2}", input_state.river_threshold), 20.0, 60.0, 24.0, DARKGRAY);
             draw_text(&format!("Elevation Offset: {:+.2}", input_state.elevation_offset), 20.0, 90.0, 24.0, DARKGRAY);
+            draw_text(&format!("Weathering: {}", if input_state.show_weathering { "ON (W)" } else { "OFF (W)" }), 20.0, 120.0, 24.0, DARKGRAY);
         }
 
         next_frame().await;

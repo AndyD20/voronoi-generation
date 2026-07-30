@@ -6,6 +6,7 @@ pub struct InputState {
     pub show_lines: bool,
     pub show_points: bool,
     pub show_ui: bool,
+    pub show_weathering: bool,
     pub seed_changed: bool,
     pub elevation_offset_changed: bool,
     pub new_seed: u32,
@@ -19,6 +20,7 @@ impl InputState {
             show_lines: false,
             show_points: false,
             show_ui: false,
+            show_weathering: true,
             seed_changed: false,
             elevation_offset_changed: false,
             new_seed: STARTING_SEED,
@@ -44,6 +46,9 @@ impl InputState {
         }
         if is_key_pressed(KeyCode::I) {
             self.show_ui = !self.show_ui;
+        }
+        if is_key_pressed(KeyCode::W) {
+            self.show_weathering = !self.show_weathering;
         }
         if is_key_pressed(KeyCode::R) {
             self.seed_changed = true;
